@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    image: whatsapp-mcm:latest
+    container_name: whatsappmcm
+    depends_on:
+      - redis
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    environment:
+      - REDIS_URL=redis:6379
+      - BASIC_AUTH_REALM=${BASIC_AUTH_REALM}
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

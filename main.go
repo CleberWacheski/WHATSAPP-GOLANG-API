@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -26,7 +27,18 @@ func main() {
 		defer wg.Done()
 		r := chi.NewRouter()
 		r.Use(middleware.Logger)
+		r.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"https://*", "http://*"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: false,
+			MaxAge:           300,
+		}))
 		r.Route("/whatsapp", func(r chi.Router) {
+			r.Use(middleware.BasicAuth(utils.ENV.BASIC_AUTH_REALM, map[string]string{
+				utils.ENV.BASIC_AUTH_USERNAME: utils.ENV.BASIC_AUTH_PASSWORD,
+			}))
 			r.Post("/session", controllers.CreateSession)
 			r.Post("/message", controllers.SendMessage)
 			r.Post("/queue/message", controllers.SendQueueMessage)
