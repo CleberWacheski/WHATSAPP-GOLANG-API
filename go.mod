@@ -4,7 +4,10 @@ go 1.22.7
 
 require (
 	github.com/go-chi/chi v1.5.5
-	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/go-chi/cors v1.2.1
+	github.com/hibiken/asynq v0.24.1
+	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	go.mau.fi/whatsmeow v0.0.0-20241015144315-3fa42c3d6a28
 )
 
@@ -12,12 +15,9 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/hibiken/asynq v0.24.1 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/redis/go-redis/v9 v9.7.0 // indirect

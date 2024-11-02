@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"whatsapp/application/utils"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -32,8 +33,9 @@ type VerifyConnectedResponse struct {
 }
 
 func (*whatsmeowAPI) Initialize() error {
+	connStr := utils.ENV.POSTGRES_URL
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
-	container, err := sqlstore.New("sqlite3", "file:whatsapp.db?_foreign_keys=on", dbLog)
+	container, err := sqlstore.New("postgres", connStr, dbLog)
 	if err != nil {
 		panic(err)
 	}
