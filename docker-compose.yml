@@ -16,6 +16,7 @@ services:
       - BASIC_AUTH_REALM=${BASIC_AUTH_REALM}
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+      - POSTGRES_URL=${POSTGRES_URL}
     restart: always
 
   redis:
