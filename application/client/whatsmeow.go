@@ -8,11 +8,11 @@ import (
 	"whatsapp/application/utils"
 
 	_ "github.com/lib/pq"
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
@@ -22,6 +22,8 @@ type whatsmeowAPI struct {
 var WhatsappAPI = whatsmeowAPI{}
 
 var WhatsAppClient = make(map[string]*whatsmeow.Client)
+var WhatsAppClientIsConnecting = make(map[string]bool)
+
 var database *sqlstore.Container
 
 type CreateSessionResponse struct {
@@ -59,6 +61,15 @@ func (*whatsmeowAPI) Initialize() error {
 	return nil
 }
 
+func eventHandler(evt interface{}, jid string) {
+	switch evt.(type) {
+	case *events.Connected:
+		{
+			WhatsAppClientIsConnecting[jid] = false
+		}
+	}
+}
+
 func (*whatsmeowAPI) CreateSession(ctx context.Context, jid string) (*CreateSessionResponse, error) {
 	conn, isValid := WhatsAppClient[jid]
 	if isValid {
@@ -69,6 +80,9 @@ func (*whatsmeowAPI) CreateSession(ctx context.Context, jid string) (*CreateSess
 	deviceStore := database.NewDevice()
 	client := whatsmeow.NewClient(deviceStore, nil)
 	qrChan, _ := client.GetQRChannel(ctx)
+	client.AddEventHandler(func(evt interface{}) {
+		eventHandler(evt, jid)
+	})
 	err := client.Connect()
 	if err != nil {
 		return nil, err
@@ -76,6 +90,7 @@ func (*whatsmeowAPI) CreateSession(ctx context.Context, jid string) (*CreateSess
 	for evt := range qrChan {
 		if evt.Event == "code" {
 			WhatsAppClient[jid] = client
+			WhatsAppClientIsConnecting[jid] = true
 			return &CreateSessionResponse{
 				QrCode:  evt.Code,
 				Timeout: evt.Timeout.Milliseconds(),
@@ -99,6 +114,12 @@ func (*whatsmeowAPI) DisconnectSession(ctx context.Context, jid string) error {
 }
 
 func (*whatsmeowAPI) VerifyConnected(ctx context.Context, jid string) *VerifyConnectedResponse {
+	isConnecting := WhatsAppClientIsConnecting[jid]
+	if isConnecting {
+		return &VerifyConnectedResponse{
+			Connected: false,
+		}
+	}
 	conn, isValid := WhatsAppClient[jid]
 	if !isValid {
 		return &VerifyConnectedResponse{
@@ -116,6 +137,10 @@ func (*whatsmeowAPI) VerifyConnected(ctx context.Context, jid string) *VerifyCon
 }
 
 func (*whatsmeowAPI) SendMessage(ctx context.Context, jid string, toJid string, message string) error {
+	isConnecting := WhatsAppClientIsConnecting[jid]
+	if isConnecting {
+		return errors.New("whatsapp não conectado")
+	}
 	conn, isValid := WhatsAppClient[jid]
 	if !isValid || !conn.IsConnected() {
 		return errors.New("whatsapp não conectado")
