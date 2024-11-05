@@ -39,8 +39,8 @@ func main() {
 		r.Post("/verify", controllers.VerifySession)
 		r.Post("/disconnect", controllers.DisconnectedSession)
 	})
-	log.Println("Servidor HTTP rodando na porta 3000")
-	if err := http.ListenAndServe(":3000", r); err != nil {
+	log.Println("Servidor HTTP rodando na porta 443")
+	if err := http.ListenAndServe(":443", r); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor HTTP: %v", err)
 	}
 }
