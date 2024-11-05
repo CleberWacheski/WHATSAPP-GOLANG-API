@@ -6,7 +6,7 @@ services:
     image: whatsapp-mcm:latest
     container_name: whatsappmcm
     ports:
-      - "443:443"
+      - "3333:3333"
     networks:
       - app-network
     environment:
